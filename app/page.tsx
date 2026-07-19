@@ -8,6 +8,7 @@ import { PaginationNav } from "@/components/pagination-nav";
 import { LogoutButton } from "@/components/logout-button";
 import { ThemeToggle } from "@/components/theme-toggle";
 import { StorageUsage } from "@/components/storage-usage";
+import { IdleTimeout } from "@/components/idle-timeout";
 import { getCachedStorageUsage } from "@/lib/storage-usage";
 import { ALLOWED_EXTS, BUCKET, PAGE_SIZE, type FileRow } from "@/lib/files";
 
@@ -127,6 +128,7 @@ export default async function Home({
         <StorageUsage usedBytes={usedBytes} quotaBytes={quotaBytes} />
       )}
       <UploadForm />
+      <IdleTimeout />
     </div>
   );
 }
