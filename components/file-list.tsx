@@ -155,6 +155,7 @@ function FileCard({ file }: { file: FileWithThumb }) {
         ext={file.ext}
         open={previewOpen}
         onOpenChange={setPreviewOpen}
+        previewUrl={file.thumbUrl}
       />
       <DeleteDialog
         id={file.id}

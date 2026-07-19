@@ -13,21 +13,27 @@ export async function GET(
   { params }: { params: Promise<{ id: string }> }
 ) {
   const supabase = await createClient();
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
-  if (!user) {
-    return NextResponse.json({ error: "Belum login" }, { status: 401 });
-  }
-
   const { id } = await params;
   const isDownload = new URL(request.url).searchParams.has("download");
 
-  const { data: file, error: fetchError } = await supabase
-    .from("files")
-    .select("storage_path, name")
-    .eq("id", id)
-    .maybeSingle();
+  // Paralel: verifikasi user & ambil row sekaligus (query tetap kena RLS).
+  const [
+    {
+      data: { user },
+    },
+    { data: file, error: fetchError },
+  ] = await Promise.all([
+    supabase.auth.getUser(),
+    supabase
+      .from("files")
+      .select("storage_path, name")
+      .eq("id", id)
+      .maybeSingle(),
+  ]);
+
+  if (!user) {
+    return NextResponse.json({ error: "Belum login" }, { status: 401 });
+  }
 
   if (fetchError) {
     return NextResponse.json({ error: "Gagal mengambil data" }, { status: 500 });

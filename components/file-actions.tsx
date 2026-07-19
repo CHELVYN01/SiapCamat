@@ -51,12 +51,15 @@ export function PreviewDialog({
   ext,
   open,
   onOpenChange,
+  previewUrl,
 }: {
   id: string;
   name: string;
   ext: FileExt;
   open: boolean;
   onOpenChange: (open: boolean) => void;
+  /** Signed URL yang sudah dimiliki halaman (mis. thumbnail) — dipakai langsung tanpa API call. */
+  previewUrl?: string;
 }) {
   const [url, setUrl] = useState<string | null>(null);
   const [docxHtml, setDocxHtml] = useState<string | null>(null);
@@ -68,7 +71,7 @@ export function PreviewDialog({
     let cancelled = false;
 
     async function load() {
-      const signedUrl = await fetchSignedUrl(id, false);
+      const signedUrl = previewUrl ?? (await fetchSignedUrl(id, false));
       if (cancelled) return;
 
       if (ext === "docx") {
@@ -92,7 +95,18 @@ export function PreviewDialog({
     return () => {
       cancelled = true;
     };
-  }, [open, id, ext, previewable]);
+  }, [open, id, ext, previewable, previewUrl]);
+
+  // URL thumbnail bisa kadaluarsa (1 jam) kalau halaman dibiarkan lama —
+  // saat gambar gagal dimuat, ambil signed URL baru lewat API.
+  async function handleImageError() {
+    if (!previewUrl || url !== previewUrl) return;
+    try {
+      setUrl(await fetchSignedUrl(id, false));
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Gagal memuat preview");
+    }
+  }
 
   function handleOpenChange(next: boolean) {
     if (!next) {
@@ -153,6 +167,7 @@ export function PreviewDialog({
                 <img
                   src={url}
                   alt={name}
+                  onError={handleImageError}
                   className="mx-auto max-h-[70vh] max-w-full rounded object-contain"
                 />
               ))}
@@ -270,10 +285,12 @@ export function FileActions({
   id,
   name,
   ext,
+  previewUrl,
 }: {
   id: string;
   name: string;
   ext: FileExt;
+  previewUrl?: string;
 }) {
   const [previewOpen, setPreviewOpen] = useState(false);
   const [confirmOpen, setConfirmOpen] = useState(false);
@@ -301,6 +318,7 @@ export function FileActions({
         ext={ext}
         open={previewOpen}
         onOpenChange={setPreviewOpen}
+        previewUrl={previewUrl}
       />
       <DeleteDialog
         id={id}

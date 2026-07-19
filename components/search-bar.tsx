@@ -1,7 +1,8 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState, useTransition } from "react";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
+import { Loader2 } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import {
   Select,
@@ -22,13 +23,16 @@ export function SearchBar() {
   const [q, setQ] = useState(searchParams.get("q") ?? "");
   const type = searchParams.get("type") ?? ALL;
   const debounce = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const [isPending, startTransition] = useTransition();
 
   function apply(nextQ: string, nextType: string) {
     const params = new URLSearchParams();
     if (nextQ.trim()) params.set("q", nextQ.trim());
     if (nextType !== ALL) params.set("type", nextType);
     // Search/filter baru selalu balik ke halaman 1
-    router.replace(params.size ? `${pathname}?${params}` : pathname);
+    startTransition(() => {
+      router.replace(params.size ? `${pathname}?${params}` : pathname);
+    });
   }
 
   function handleSearch(value: string) {
@@ -64,6 +68,11 @@ export function SearchBar() {
           ))}
         </SelectContent>
       </Select>
+      {isPending && (
+        <span className="flex items-center text-muted-foreground">
+          <Loader2 className="size-4 animate-spin" aria-label="Memuat..." />
+        </span>
+      )}
     </div>
   );
 }

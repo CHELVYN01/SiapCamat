@@ -23,10 +23,6 @@ export default async function Home({
   searchParams: SearchParams;
 }) {
   const supabase = await createClient();
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
-  if (!user) redirect("/login");
 
   const params = await searchParams;
   const q = (params.q ?? "").trim();
@@ -44,7 +40,22 @@ export default async function Home({
   if (type) query = query.eq("ext", type);
 
   const from = (requestedPage - 1) * PAGE_SIZE;
-  const { data, count, error } = await query.range(from, from + PAGE_SIZE - 1);
+
+  // Jalankan paralel, bukan berurutan — tiap await adalah round-trip ke
+  // Supabase. Query files & RPC tetap aman dijalankan sebelum cek user
+  // karena keduanya lewat client cookie-bound yang kena RLS.
+  const [
+    {
+      data: { user },
+    },
+    { data, count, error },
+    { data: usedBytes },
+  ] = await Promise.all([
+    supabase.auth.getUser(),
+    query.range(from, from + PAGE_SIZE - 1),
+    supabase.rpc("storage_usage"),
+  ]);
+  if (!user) redirect("/login");
 
   const total = count ?? 0;
   const totalPages = Math.max(1, Math.ceil(total / PAGE_SIZE));
@@ -71,7 +82,6 @@ export default async function Home({
 
   // Total pemakaian storage (SUM di database, bukan di aplikasi).
   // Kuota diatur via env STORAGE_QUOTA_GB (default 1 GB = free plan Supabase).
-  const { data: usedBytes } = await supabase.rpc("storage_usage");
   const quotaBytes =
     (Number.parseFloat(process.env.STORAGE_QUOTA_GB ?? "1") || 1) *
     1024 *

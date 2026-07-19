@@ -8,9 +8,10 @@ import {
 } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
 import { FileActions } from "@/components/file-actions";
-import { formatBytes, formatDate, type FileRow } from "@/lib/files";
+import type { FileWithThumb } from "@/components/file-list";
+import { formatBytes, formatDate } from "@/lib/files";
 
-export function FileTable({ files }: { files: FileRow[] }) {
+export function FileTable({ files }: { files: FileWithThumb[] }) {
   if (files.length === 0) {
     return (
       <div className="rounded-md border py-12 text-center text-sm text-muted-foreground">
@@ -43,7 +44,12 @@ export function FileTable({ files }: { files: FileRow[] }) {
               <TableCell>{formatBytes(file.size_bytes)}</TableCell>
               <TableCell>{formatDate(file.created_at)}</TableCell>
               <TableCell>
-                <FileActions id={file.id} name={file.name} ext={file.ext} />
+                <FileActions
+                  id={file.id}
+                  name={file.name}
+                  ext={file.ext}
+                  previewUrl={file.thumbUrl}
+                />
               </TableCell>
             </TableRow>
           ))}
