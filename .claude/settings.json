@@ -1,0 +1,21 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(mv /Users/chelvynkleden/developer/freelancer/SiapCamat/planing.md /private/tmp/claude-501/-Users-chelvynkleden-developer-freelancer-SiapCamat/99e05456-7ce5-4113-bb2e-ae9ab1fbb9f3/scratchpad/planing.md)",
+      "Bash(npx --yes create-next-app@latest . --typescript --tailwind --eslint --app --no-src-dir --import-alias \"@/*\" --use-npm --turbopack --skip-install)",
+      "Bash(rm -rf siapcamat-tmp/.git)",
+      "Bash(mv siapcamat-tmp/* siapcamat-tmp/.* .)",
+      "Bash(node -e \"const p=require\\('./package.json'\\);p.name='siapcamat';require\\('fs'\\).writeFileSync\\('./package.json',JSON.stringify\\(p,null,2\\)+'\\\\n'\\)\")",
+      "Bash(npm install *)",
+      "Bash(npx --yes shadcn@latest init -d)",
+      "Bash(npx --yes shadcn@latest add button input table card badge select dialog label alert)",
+      "Bash(npm run *)",
+      "Bash(awk -F= '/^NEXT_PUBLIC_SUPABASE_URL/ {print \"URL: \" $2} /^NEXT_PUBLIC_SUPABASE_ANON_KEY/ {print \"ANON: \" substr\\($2,1,15\\) \"... \\(len \" length\\($2\\) \"\\)\"} /^SUPABASE_SERVICE_ROLE_KEY/ {print \"SERVICE: \" substr\\($2,1,15\\) \"... \\(len \" length\\($2\\) \"\\)\"}' .env.local)",
+      "Bash(npx --yes shadcn@latest add dropdown-menu)",
+      "Bash(git init *)"
+    ],
+    "additionalDirectories": [
+      "/Users/chelvynkleden/developer/freelancer/SiapCamat"
+    ]
+  }
+}
