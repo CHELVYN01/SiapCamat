@@ -1,6 +1,8 @@
 import { NextResponse } from "next/server";
+import { revalidateTag } from "next/cache";
 import { createClient } from "@/lib/supabase/server";
 import { createAdminClient } from "@/lib/supabase/admin";
+import { STORAGE_USAGE_TAG } from "@/lib/storage-usage";
 import {
   ALLOWED_MIMES,
   BUCKET,
@@ -95,6 +97,13 @@ export async function POST(request: Request) {
       { status: 500 }
     );
   }
+
+  // File baru masuk → total pemakaian berubah. Buang cache-nya supaya
+  // render dashboard berikutnya menghitung ulang. `{ expire: 0 }` =
+  // kadaluarsa seketika (bukan stale-while-revalidate) supaya angka
+  // langsung akurat setelah upload; bentuk dua-argumen ini menggantikan
+  // `revalidateTag(tag)` lama yang sudah deprecated di Next 16.
+  revalidateTag(STORAGE_USAGE_TAG, { expire: 0 });
 
   return NextResponse.json({ ok: true, file: row });
 }

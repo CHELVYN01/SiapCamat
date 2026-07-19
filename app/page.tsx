@@ -8,6 +8,7 @@ import { PaginationNav } from "@/components/pagination-nav";
 import { LogoutButton } from "@/components/logout-button";
 import { ThemeToggle } from "@/components/theme-toggle";
 import { StorageUsage } from "@/components/storage-usage";
+import { getCachedStorageUsage } from "@/lib/storage-usage";
 import { ALLOWED_EXTS, BUCKET, PAGE_SIZE, type FileRow } from "@/lib/files";
 
 /** Escape wildcard ilike supaya "%"/"_" di input dicari literal. */
@@ -49,11 +50,14 @@ export default async function Home({
       data: { user },
     },
     { data, count, error },
-    { data: usedBytes },
+    usedBytes,
   ] = await Promise.all([
     supabase.auth.getUser(),
     query.range(from, from + PAGE_SIZE - 1),
-    supabase.rpc("storage_usage"),
+    // Angka ini di-cache Next.js (lihat lib/storage-usage.ts). Cache hit =
+    // tanpa round-trip ke Supabase. `.catch` menjaga dashboard tetap tampil
+    // kalau RPC gagal (widget storage tinggal disembunyikan).
+    getCachedStorageUsage().catch(() => null),
   ]);
   if (!user) redirect("/login");
 

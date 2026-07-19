@@ -1,6 +1,8 @@
 import { NextResponse } from "next/server";
+import { revalidateTag } from "next/cache";
 import { createClient } from "@/lib/supabase/server";
 import { createAdminClient } from "@/lib/supabase/admin";
+import { STORAGE_USAGE_TAG } from "@/lib/storage-usage";
 import { BUCKET } from "@/lib/files";
 
 /**
@@ -60,6 +62,11 @@ export async function DELETE(
       { status: 500 }
     );
   }
+
+  // File terhapus → total pemakaian turun. Buang cache storage usage
+  // supaya render dashboard berikutnya menghitung ulang (lihat
+  // konfirmasi upload untuk penjelasan `{ expire: 0 }`).
+  revalidateTag(STORAGE_USAGE_TAG, { expire: 0 });
 
   return NextResponse.json({ ok: true });
 }
