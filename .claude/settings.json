@@ -12,7 +12,13 @@
       "Bash(npm run *)",
       "Bash(awk -F= '/^NEXT_PUBLIC_SUPABASE_URL/ {print \"URL: \" $2} /^NEXT_PUBLIC_SUPABASE_ANON_KEY/ {print \"ANON: \" substr\\($2,1,15\\) \"... \\(len \" length\\($2\\) \"\\)\"} /^SUPABASE_SERVICE_ROLE_KEY/ {print \"SERVICE: \" substr\\($2,1,15\\) \"... \\(len \" length\\($2\\) \"\\)\"}' .env.local)",
       "Bash(npx --yes shadcn@latest add dropdown-menu)",
-      "Bash(git init *)"
+      "Bash(git init *)",
+      "Bash(git check-ignore *)",
+      "Bash(git remote *)",
+      "Bash(git push *)",
+      "Bash(python3 -c \"import json,sys; [print\\(o['name'], o.get\\('metadata',{}\\).get\\('size'\\)\\) for o in json.load\\(sys.stdin\\)]\")",
+      "Bash(node --env-file=.env.local -e ' *)",
+      "Bash(npx tsc *)"
     ],
     "additionalDirectories": [
       "/Users/chelvynkleden/developer/freelancer/SiapCamat"
