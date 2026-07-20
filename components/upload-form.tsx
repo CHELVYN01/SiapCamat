@@ -1,10 +1,16 @@
 "use client";
 
 import { useCallback, useEffect, useRef, useState } from "react";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import { Plus, Upload, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { MAX_FILE_SIZE, extFromName, formatBytes } from "@/lib/files";
+import {
+  MAX_FILE_SIZE,
+  categoryLabel,
+  extFromName,
+  formatBytes,
+  isCategorySlug,
+} from "@/lib/files";
 
 type UploadItem = {
   key: string;
@@ -41,6 +47,12 @@ function uploadWithProgress(
 
 export function UploadForm() {
   const router = useRouter();
+  const searchParams = useSearchParams();
+  // Folder yang sedang dibuka = target upload. Null = "Semua" (tanpa kategori).
+  const rawCategory = searchParams.get("category");
+  const activeCategory = isCategorySlug(rawCategory) ? rawCategory : null;
+  const activeCategoryLabel = categoryLabel(activeCategory);
+
   const inputRef = useRef<HTMLInputElement>(null);
   const [items, setItems] = useState<UploadItem[]>([]);
   const [busy, setBusy] = useState(false);
@@ -53,7 +65,7 @@ export function UploadForm() {
   }, []);
 
   const uploadOne = useCallback(
-    async (file: File, key: string) => {
+    async (file: File, key: string, category: string | null) => {
       if (!extFromName(file.name)) {
         throw new Error("Tipe tidak diizinkan (hanya PDF, JPG, PNG, DOCX, XLSX)");
       }
@@ -85,7 +97,7 @@ export function UploadForm() {
       const confirmRes = await fetch("/api/files/confirm", {
         method: "POST",
         headers: { "content-type": "application/json" },
-        body: JSON.stringify({ path: signData.path, name: file.name }),
+        body: JSON.stringify({ path: signData.path, name: file.name, category }),
       });
       const confirmData = await confirmRes.json();
       if (!confirmRes.ok) {
@@ -99,6 +111,9 @@ export function UploadForm() {
     async (fileList: FileList | File[] | null) => {
       if (busy || !fileList || fileList.length === 0) return;
       const files = Array.from(fileList);
+      // Kunci kategori target di awal batch (biar konsisten walau user
+      // pindah folder saat upload berjalan).
+      const targetCategory = activeCategory;
       setBusy(true);
 
       const stamp = Date.now();
@@ -117,7 +132,7 @@ export function UploadForm() {
       for (let i = 0; i < files.length; i++) {
         const key = `${stamp}-${i}`;
         try {
-          await uploadOne(files[i], key);
+          await uploadOne(files[i], key, targetCategory);
           patchItem(key, { status: "done", progress: 100 });
           anySuccess = true;
         } catch (err) {
@@ -132,7 +147,7 @@ export function UploadForm() {
       if (inputRef.current) inputRef.current.value = "";
       if (anySuccess) router.refresh();
     },
-    [busy, patchItem, router, uploadOne]
+    [activeCategory, busy, patchItem, router, uploadOne]
   );
 
   // Drag & drop global: seret file ke mana pun di halaman
@@ -196,6 +211,11 @@ export function UploadForm() {
             </div>
             <p className="text-lg font-semibold">
               {busy ? "Tunggu upload selesai dulu ya" : "Lepaskan untuk mengupload"}
+            </p>
+            <p className="text-sm font-medium text-primary">
+              {activeCategoryLabel
+                ? `Masuk folder: ${activeCategoryLabel}`
+                : "Tanpa kategori (folder Semua)"}
             </p>
             <p className="text-xs text-muted-foreground">
               PDF · JPG · PNG · DOCX · XLSX — maks 1 GB per file
@@ -261,7 +281,7 @@ export function UploadForm() {
       <div className="group fixed bottom-6 right-6 z-50">
         <span className="pointer-events-none absolute right-full top-1/2 mr-3 -translate-y-1/2 whitespace-nowrap rounded-lg bg-foreground px-3 py-2 text-right opacity-0 shadow-md transition-opacity duration-200 group-hover:opacity-100">
           <span className="block text-sm font-medium text-background">
-            Upload File
+            {activeCategoryLabel ? `Upload ke ${activeCategoryLabel}` : "Upload File"}
           </span>
           <span className="block text-[10px] text-background/70">
             PDF · JPG · PNG · DOCX · XLSX — maks 1 GB · bisa drag & drop

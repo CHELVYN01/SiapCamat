@@ -7,17 +7,29 @@ import { FileList } from "@/components/file-list";
 import { PaginationNav } from "@/components/pagination-nav";
 import { LogoutButton } from "@/components/logout-button";
 import { ThemeToggle } from "@/components/theme-toggle";
-import { StorageUsage } from "@/components/storage-usage";
 import { IdleTimeout } from "@/components/idle-timeout";
+import { CategorySidebar } from "@/components/category-sidebar";
 import { getCachedStorageUsage } from "@/lib/storage-usage";
-import { ALLOWED_EXTS, BUCKET, PAGE_SIZE, type FileRow } from "@/lib/files";
+import {
+  ALLOWED_EXTS,
+  BUCKET,
+  PAGE_SIZE,
+  categoryLabel,
+  isCategorySlug,
+  type FileRow,
+} from "@/lib/files";
 
 /** Escape wildcard ilike supaya "%"/"_" di input dicari literal. */
 function escapeLike(value: string) {
   return value.replace(/[\\%_]/g, (m) => `\\${m}`);
 }
 
-type SearchParams = Promise<{ page?: string; q?: string; type?: string }>;
+type SearchParams = Promise<{
+  page?: string;
+  q?: string;
+  type?: string;
+  category?: string;
+}>;
 
 export default async function Home({
   searchParams,
@@ -31,6 +43,7 @@ export default async function Home({
   const type = (ALLOWED_EXTS as string[]).includes(params.type ?? "")
     ? (params.type as string)
     : "";
+  const category = isCategorySlug(params.category) ? params.category : null;
   const requestedPage = Math.max(1, Number.parseInt(params.page ?? "1", 10) || 1);
 
   let query = supabase
@@ -40,6 +53,7 @@ export default async function Home({
 
   if (q) query = query.ilike("name", `%${escapeLike(q)}%`);
   if (type) query = query.eq("ext", type);
+  if (category) query = query.eq("category", category);
 
   const from = (requestedPage - 1) * PAGE_SIZE;
 
@@ -96,7 +110,7 @@ export default async function Home({
   return (
     <div className="flex flex-1 flex-col">
       <header className="sticky top-0 z-10 border-b bg-background/90 backdrop-blur">
-        <div className="mx-auto flex w-full max-w-5xl items-center justify-between px-4 py-3 sm:px-8">
+        <div className="flex w-full items-center justify-between px-4 py-3 sm:px-6">
           <Brand />
           <div className="flex items-center gap-2">
             <ThemeToggle />
@@ -105,28 +119,38 @@ export default async function Home({
         </div>
       </header>
 
-      <main className="mx-auto w-full max-w-5xl flex-1 space-y-6 p-4 sm:p-8">
-        <SearchBar />
-
-        {error ? (
-          <div className="rounded-md border border-destructive/50 p-4 text-sm text-destructive">
-            Gagal memuat daftar file: {error.message}
-          </div>
-        ) : (
-          <FileList files={filesWithThumbs} total={total} />
-        )}
-
-        <PaginationNav
-          page={requestedPage}
-          totalPages={totalPages}
-          q={q}
-          type={type}
+      <div className="flex flex-1 flex-col lg:flex-row">
+        <CategorySidebar
+          userEmail={user.email ?? ""}
+          usedBytes={usedBytes}
+          quotaBytes={quotaBytes}
         />
-      </main>
 
-      {typeof usedBytes === "number" && (
-        <StorageUsage usedBytes={usedBytes} quotaBytes={quotaBytes} />
-      )}
+        <main className="min-w-0 flex-1 space-y-6 p-4 sm:p-6">
+          <h1 className="text-lg font-semibold">
+            {categoryLabel(category) ?? "Semua file"}
+          </h1>
+
+          <SearchBar />
+
+          {error ? (
+            <div className="rounded-md border border-destructive/50 p-4 text-sm text-destructive">
+              Gagal memuat daftar file: {error.message}
+            </div>
+          ) : (
+            <FileList files={filesWithThumbs} total={total} />
+          )}
+
+          <PaginationNav
+            page={requestedPage}
+            totalPages={totalPages}
+            q={q}
+            type={type}
+            category={category ?? ""}
+          />
+        </main>
+      </div>
+
       <UploadForm />
       <IdleTimeout />
     </div>

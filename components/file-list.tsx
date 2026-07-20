@@ -19,6 +19,7 @@ import {
 import { FileTable } from "@/components/file-table";
 import { cn } from "@/lib/utils";
 import {
+  categoryLabel,
   formatBytes,
   formatDate,
   type FileExt,
@@ -145,9 +146,16 @@ function FileCard({ file }: { file: FileWithThumb }) {
         </Badge>
       </button>
 
-      <p className="px-2.5 pb-2 text-[11px] text-muted-foreground">
-        {formatBytes(file.size_bytes)} · {formatDate(file.created_at)}
-      </p>
+      <div className="px-2.5 pb-2">
+        {categoryLabel(file.category) && (
+          <p className="truncate text-[11px] font-medium text-primary/90">
+            {categoryLabel(file.category)}
+          </p>
+        )}
+        <p className="text-[11px] text-muted-foreground">
+          {formatBytes(file.size_bytes)} · {formatDate(file.created_at)}
+        </p>
+      </div>
 
       <PreviewDialog
         id={file.id}
@@ -209,7 +217,7 @@ export function FileList({
           Tidak ada file. Upload file pertama kamu di atas.
         </div>
       ) : view === "grid" ? (
-        <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-4">
+        <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 2xl:grid-cols-6">
           {files.map((file) => (
             <FileCard key={file.id} file={file} />
           ))}

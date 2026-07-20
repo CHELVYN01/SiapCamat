@@ -1,7 +1,7 @@
 import { formatBytes } from "@/lib/files";
 import { cn } from "@/lib/utils";
 
-/** Widget pemakaian storage ala OneDrive (kiri bawah). */
+/** Ringkasan pemakaian storage — dipasang di dalam sidebar (bawah). */
 export function StorageUsage({
   usedBytes,
   quotaBytes,
@@ -13,7 +13,7 @@ export function StorageUsage({
   const pctLabel = pct < 1 && usedBytes > 0 ? "<1" : Math.round(pct).toString();
 
   return (
-    <div className="fixed bottom-6 left-6 z-40 hidden w-56 rounded-xl border bg-card/95 p-3 shadow-lg backdrop-blur sm:block">
+    <div className="w-full">
       <p className="text-sm font-semibold">Penyimpanan</p>
       <div className="mt-2 h-1.5 w-full overflow-hidden rounded-full bg-muted">
         <div

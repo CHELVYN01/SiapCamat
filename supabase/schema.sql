@@ -11,12 +11,18 @@ create table public.files (
   ext           text not null check (ext in ('pdf', 'jpg', 'png', 'docx', 'xlsx')),
   mime_type     text not null,
   size_bytes    bigint not null check (size_bytes > 0 and size_bytes <= 1073741824),
+  -- Kategori = "folder" tetap. Boleh null (file tanpa kategori).
+  category      text check (category in (
+                  'surat-masuk', 'surat-keluar', 'surat-pindah-penduduk',
+                  'dpa', 'lpj', 'data-kepegawaian'
+                )),
   created_at    timestamptz not null default now()
 );
 
 create index files_created_at_idx on public.files (created_at desc);
 create index files_name_idx       on public.files (lower(name));
 create index files_ext_idx        on public.files (ext);
+create index files_category_idx   on public.files (category);
 
 -- ---------- 2. Row Level Security ----------
 alter table public.files enable row level security;

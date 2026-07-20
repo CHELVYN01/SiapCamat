@@ -15,6 +15,35 @@ export type FileExt = keyof typeof ALLOWED_TYPES;
 export const ALLOWED_EXTS = Object.keys(ALLOWED_TYPES) as FileExt[];
 export const ALLOWED_MIMES = Object.values(ALLOWED_TYPES) as string[];
 
+/**
+ * Kategori file = "folder" tetap (bukan folder bebas). Slug dipakai di DB
+ * & URL, label dipakai di UI. Untuk menambah/mengubah kategori: ubah
+ * daftar ini DAN CHECK constraint di supabase (schema.sql + migrasi baru).
+ */
+export const CATEGORIES = [
+  { slug: "surat-masuk", label: "Surat Masuk" },
+  { slug: "surat-keluar", label: "Surat Keluar" },
+  { slug: "surat-pindah-penduduk", label: "Surat Pindah Penduduk" },
+  { slug: "dpa", label: "DPA" },
+  { slug: "lpj", label: "LPJ" },
+  { slug: "data-kepegawaian", label: "Data Kepegawaian" },
+] as const;
+
+export type CategorySlug = (typeof CATEGORIES)[number]["slug"];
+
+export const CATEGORY_SLUGS = CATEGORIES.map((c) => c.slug) as CategorySlug[];
+
+export function isCategorySlug(value: unknown): value is CategorySlug {
+  return (
+    typeof value === "string" && (CATEGORY_SLUGS as string[]).includes(value)
+  );
+}
+
+/** Label tampilan dari slug; null kalau slug tidak dikenal / tanpa kategori. */
+export function categoryLabel(slug: string | null | undefined): string | null {
+  return CATEGORIES.find((c) => c.slug === slug)?.label ?? null;
+}
+
 export type FileRow = {
   id: string;
   name: string;
@@ -22,6 +51,7 @@ export type FileRow = {
   ext: FileExt;
   mime_type: string;
   size_bytes: number;
+  category: CategorySlug | null;
   created_at: string;
 };
 

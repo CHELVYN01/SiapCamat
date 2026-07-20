@@ -6,12 +6,14 @@ type Props = {
   totalPages: number;
   q: string;
   type: string;
+  category: string;
 };
 
-function pageHref(page: number, q: string, type: string) {
+function pageHref(page: number, q: string, type: string, category: string) {
   const params = new URLSearchParams();
   if (q) params.set("q", q);
   if (type) params.set("type", type);
+  if (category) params.set("category", category);
   if (page > 1) params.set("page", String(page));
   const qs = params.toString();
   return qs ? `/?${qs}` : "/";
@@ -40,7 +42,7 @@ function PageLink({
   );
 }
 
-export function PaginationNav({ page, totalPages, q, type }: Props) {
+export function PaginationNav({ page, totalPages, q, type, category }: Props) {
   if (totalPages <= 1) return null;
 
   return (
@@ -49,10 +51,13 @@ export function PaginationNav({ page, totalPages, q, type }: Props) {
         Halaman {page} dari {totalPages}
       </p>
       <div className="flex gap-2">
-        <PageLink disabled={page <= 1} href={pageHref(page - 1, q, type)}>
+        <PageLink disabled={page <= 1} href={pageHref(page - 1, q, type, category)}>
           Sebelumnya
         </PageLink>
-        <PageLink disabled={page >= totalPages} href={pageHref(page + 1, q, type)}>
+        <PageLink
+          disabled={page >= totalPages}
+          href={pageHref(page + 1, q, type, category)}
+        >
           Berikutnya
         </PageLink>
       </div>

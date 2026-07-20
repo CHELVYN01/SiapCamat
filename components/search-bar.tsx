@@ -22,6 +22,9 @@ export function SearchBar() {
 
   const [q, setQ] = useState(searchParams.get("q") ?? "");
   const type = searchParams.get("type") ?? ALL;
+  // Kategori (folder) aktif dipertahankan saat search/filter tipe berubah,
+  // supaya pencarian tetap di dalam folder yang sedang dibuka.
+  const category = searchParams.get("category") ?? "";
   const debounce = useRef<ReturnType<typeof setTimeout> | null>(null);
   const [isPending, startTransition] = useTransition();
 
@@ -29,6 +32,7 @@ export function SearchBar() {
     const params = new URLSearchParams();
     if (nextQ.trim()) params.set("q", nextQ.trim());
     if (nextType !== ALL) params.set("type", nextType);
+    if (category) params.set("category", category);
     // Search/filter baru selalu balik ke halaman 1
     startTransition(() => {
       router.replace(params.size ? `${pathname}?${params}` : pathname);

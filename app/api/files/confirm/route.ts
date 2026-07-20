@@ -8,6 +8,7 @@ import {
   BUCKET,
   MAX_FILE_SIZE,
   extFromName,
+  isCategorySlug,
 } from "@/lib/files";
 
 const PATH_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}\.(pdf|jpg|png|docx|xlsx)$/;
@@ -28,7 +29,7 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: "Belum login" }, { status: 401 });
   }
 
-  let body: { path?: unknown; name?: unknown };
+  let body: { path?: unknown; name?: unknown; category?: unknown };
   try {
     body = await request.json();
   } catch {
@@ -37,6 +38,9 @@ export async function POST(request: Request) {
 
   const path = typeof body.path === "string" ? body.path : "";
   const name = typeof body.name === "string" ? body.name.trim() : "";
+  // Kategori opsional; nilai tak dikenal diabaikan (jadi null) supaya
+  // client tak bisa menyisipkan kategori sembarangan.
+  const category = isCategorySlug(body.category) ? body.category : null;
 
   if (!PATH_RE.test(path) || !name || name.length > 255) {
     return NextResponse.json({ error: "Data tidak valid" }, { status: 400 });
@@ -83,6 +87,7 @@ export async function POST(request: Request) {
       ext,
       mime_type: mime,
       size_bytes: size,
+      category,
     })
     .select()
     .single();
