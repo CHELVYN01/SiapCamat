@@ -39,14 +39,17 @@ export function LoginForm() {
   }
 
   return (
-    <Card className="w-full max-w-sm">
-      <CardHeader className="items-center text-center">
-        <Brand className="justify-center" />
-        <p className="pt-2 text-sm text-muted-foreground">
-          Masuk sebagai admin untuk mengelola arsip
-        </p>
-      </CardHeader>
-      <CardContent>
+    <div className="flex w-full max-w-sm flex-col items-center gap-6">
+      {/* Logo & wordmark di ATAS kartu, bukan di dalamnya */}
+      <Brand vertical />
+
+      <Card className="w-full">
+        <CardHeader className="items-center text-center">
+          <p className="text-sm text-muted-foreground">
+            Masuk sebagai admin untuk mengelola arsip
+          </p>
+        </CardHeader>
+        <CardContent>
         <form onSubmit={handleSubmit} className="space-y-4">
           <div className="space-y-2">
             <Label htmlFor="email">Email</Label>
@@ -79,7 +82,8 @@ export function LoginForm() {
             {loading ? "Memproses..." : "Masuk"}
           </Button>
         </form>
-      </CardContent>
-    </Card>
+        </CardContent>
+      </Card>
+    </div>
   );
 }

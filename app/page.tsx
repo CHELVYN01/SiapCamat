@@ -5,7 +5,6 @@ import { UploadForm } from "@/components/upload-form";
 import { SearchBar } from "@/components/search-bar";
 import { FileList } from "@/components/file-list";
 import { PaginationNav } from "@/components/pagination-nav";
-import { LogoutButton } from "@/components/logout-button";
 import { ThemeToggle } from "@/components/theme-toggle";
 import { IdleTimeout } from "@/components/idle-timeout";
 import { CategorySidebar } from "@/components/category-sidebar";
@@ -76,6 +75,9 @@ export default async function Home({
   ]);
   if (!user) redirect("/login");
 
+  // "admin@gmail.com" → "admin"
+  const username = (user.email ?? "").split("@")[0] || "admin";
+
   const total = count ?? 0;
   const totalPages = Math.max(1, Math.ceil(total / PAGE_SIZE));
   const files = (data ?? []) as FileRow[];
@@ -112,19 +114,23 @@ export default async function Home({
       <header className="sticky top-0 z-10 border-b bg-background/90 backdrop-blur">
         <div className="flex w-full items-center justify-between px-4 py-3 sm:px-6">
           <Brand />
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-3">
             <ThemeToggle />
-            <LogoutButton />
+            {/* Identitas user (admin) pindah ke sini, di kanan atas */}
+            <div className="flex items-center gap-2 rounded-full border py-1 pl-1 pr-3">
+              <div className="flex size-8 shrink-0 items-center justify-center rounded-full bg-primary/10 text-sm font-semibold text-primary">
+                {username.charAt(0).toUpperCase()}
+              </div>
+              <span className="hidden text-sm font-medium capitalize sm:inline">
+                {username}
+              </span>
+            </div>
           </div>
         </div>
       </header>
 
       <div className="flex flex-1 flex-col lg:flex-row">
-        <CategorySidebar
-          userEmail={user.email ?? ""}
-          usedBytes={usedBytes}
-          quotaBytes={quotaBytes}
-        />
+        <CategorySidebar usedBytes={usedBytes} quotaBytes={quotaBytes} />
 
         <main className="min-w-0 flex-1 space-y-6 p-4 sm:p-6">
           <h1 className="text-lg font-semibold">
